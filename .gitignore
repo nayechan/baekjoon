@@ -5,4 +5,5 @@
 !*.cpp
 !*.c
 !*.java
+!*.python
 !*/

@@ -1,47 +1,116 @@
 #include <iostream>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
-pair<int,int> getDeepest(vector<pair<int,int>> * graph, bool * visited, int index, int n)
-{
-	pair<int, int> deepest = {index, 0};
-	visited[index] = true;
-	for(pair<int,int> & itr : graph[index])
+class Node;
+
+class Connection{
+	shared_ptr<Node> from;
+	shared_ptr<Node> to;
+	int distance;
+
+public:
+	Connection(shared_ptr<Node> from, shared_ptr<Node> to, int distance) 
+        : from(from), to(to), distance(distance) {}
+
+	shared_ptr<Node> GetFrom(){return from;}
+	shared_ptr<Node> GetTo(){return to;}
+
+	int GetDistance()
 	{
-		if(visited[itr.first]) continue;
-		pair<int,int> result = getDeepest(graph, visited, itr.first, n);
-		result.second += itr.second;
-		if(result.second>deepest.second)
-		{
-			deepest = result;
-		}
+		return distance;
 	}
-	return deepest;
-}
+};
+
+class Node{
+	int value;
+	vector<shared_ptr<Connection>> connections;
+
+public:
+	Node(int value) : value(value){}
+
+    std::shared_ptr<Node> shared_from_this() {
+        return std::shared_ptr<Node>(this);
+    }
+
+	int GetValue(){return value;}
+
+	void Connect(shared_ptr<Node> node, int distance){
+		ConnectSingleDirection(node, distance);
+		node->Connect(shared_from_this(), distance);
+	}
+
+	void ConnectSingleDirection(shared_ptr<Node> node, int distance){
+		connections.push_back(make_shared<Connection>(shared_from_this(), &node, distance));
+	}
+
+	int GetLongestLength(bool ** visited)
+	{
+		int visition = 0;
+		int maxDist = 0;
+		
+		*visited[value] = true;
+
+		for (auto && connection : connections)
+		{
+			int to = connection->GetTo()->GetValue();
+
+			if(!*visited[to])
+			{
+				int dist = connection->GetTo()->GetLongestLength(visited);
+				if(maxDist < dist) maxDist = dist;
+			}
+
+		}
+		
+		*visited[value] = false;
+
+		return maxDist;
+	}
+};
 
 int main()
 {
-	int n;
-	scanf("%d",&n);
+	int inputCount;
 
-	vector<pair<int,int>> * graph = new vector<pair<int,int>>[n];
+	cin >> inputCount;
 
-	for(int i=0;i<n-1;++i)
+	Node ** node = new Node*[inputCount+1];
+	
+	for(int i=0; i<=inputCount; ++i)
 	{
-		int u,v,w;
-		scanf("%d %d %d",&u,&v,&w);
-		graph[u-1].push_back({v-1,w});
-		graph[v-1].push_back({u-1,w});
+		node[i] = new Node(i);
 	}
 
-	bool * visited = new bool[n];
+	for(int i=1; i<=inputCount; ++i)
+	{
+		int from, to, distance;
 
-	pair<int,int> x =  getDeepest(graph,visited,0,n);
-	for(int i=0;i<n;++i)
-		visited[i] = false;
-	pair<int,int> y = getDeepest(graph,visited,x.first,n);
+		cin >> from >> to >> distance;
 
-	cout << y.second << endl;
+		node[from]->Connect(make_shared<Node>(node[to]), distance);
+	}
+
+	int max = -1;
+	for(int i=1; i<=inputCount; ++i)
+	{
+		bool * visited = new bool[inputCount+1];
+	
+		for(int j=0; j<=inputCount; ++j)
+		{
+			visited[j] = false;
+		}
+
+		int length = node[i]->GetLongestLength(&visited);
+
+		if (max < length) max = length;
+
+		delete[] visited;
+	}
+
+	cout << max << endl;
+
 	return 0;
 }

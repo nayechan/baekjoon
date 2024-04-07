@@ -31,7 +31,7 @@ bool IsTheHolyGrail(const string& input)
 	for (char ch : input)
 	{
 		if (charList.size() == 0) break;
-		if (charList.front() == ch)
+		if (charList.front() == tolower(ch))
 		{
 			charList.pop_front();
 		}
@@ -115,8 +115,9 @@ public:
 
 int main()
 {
-	//ios_base::sync_with_stdio(false);
-	//cin.tie(NULL);
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL);
+    cout.tie(NULL);
 
 	shared_ptr<BaseFA> taunt, sentence, noun_phrase, modified_noun, modifier, present_rel,
 		past_rel, present_person, past_person, noun, present_verb, past_verb, article, adjective, adverb;
@@ -239,7 +240,7 @@ int main()
 				++n;
 			}
 		}
-		cout << endl;
+		cout << "\n";
 		_taunt->SetCount((n + 2) / 3);
 
 		bool isTheHolyGrail = IsTheHolyGrail(input);
@@ -248,14 +249,14 @@ int main()
 		{
 			if (isTheHolyGrail)
 			{
-				cout << "Taunter: " << _taunt->GetChildishHandGesture() << "." << endl;
+				cout << "Taunter: " << _taunt->GetChildishHandGesture() << "."  << "\n";
 				isTheHolyGrail = false;
 			}
 			else
 			{
-				cout << "Taunter: " << _taunt->Get() << "." << endl;
+				cout << "Taunter: " << _taunt->Get() << "."  << "\n";
 			}
 		}
-		cout << endl;
+		cout  << "\n";
 	}
 }

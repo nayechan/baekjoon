@@ -3,8 +3,6 @@
 #include <queue>
 #include <list>
 
-#define LS(a,b) (a)<<(b)
-
 using namespace std;
 
 constexpr int searchDepth = 10;
@@ -189,6 +187,10 @@ int simulate(vector<vector<int>> & board, int searchDepth) {
 
 int main()
 {
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+    
     int n;
     cin >> n;
     vector<vector<int>> board(n, vector<int>(n, 0));

@@ -1,15 +1,17 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <deque>
+#include <stack>
 #include <list>
 
 using namespace std;
 
 constexpr int searchDepth = 10;
 
-void printBoard(const vector<vector<int>> &board) {
-    for (const auto &row : board) {
-        for (const auto &cell : row) {
+void printBoard(const vector<vector<int>>& board) {
+    for (const auto& row : board) {
+        for (const auto& cell : row) {
             cout << cell << "\t";
         }
         cout << "\n";
@@ -17,170 +19,229 @@ void printBoard(const vector<vector<int>> &board) {
     cout << "\n";
 }
 
-bool isEqual(vector<vector<int>> & boardA, vector<vector<int>> & boardB)
-{
-    bool isSame = true;
-    int n = boardA.size();
-
-    for(int i=0;i<n;++i)
-    {
-        for(int j=0;j<n;++j)
-        {
-            if(boardA[i][j] != boardB[i][j])
-            {
-                isSame = false;
-                break;
-            }
-        }
-
-        if(isSame == false)
-            break;
-    }
-
-    return isSame;
-
-}
-
-int fall(vector<vector<int>> & board, int direction)
+bool fall(vector<vector<int>>& board, int direction, int& outputMax, int& outputSum)
 {
     // 0 : down, 1 : right, 2 : up, 3 : left
     int n = board.size();
-    int max = -1;
+    int max = 0;
+    int sum = 0;
 
-    for(int i=0;i<n;++i)
+    bool isEqual = true;
+
+    stack<int> line;
+
+    if (direction == 0)
     {
-        list<int> line;
-        list<int> newLine;
-        for(int j=0;j<n;++j)
+        for (int j = 0;j < n;++j)
         {
-            if(direction % 2 == 1 && board[i][j] != 0)
+            for (int i = 0;i < n;++i)
             {
-                line.push_back(board[i][j]);
+                if (board[i][j] != 0)
+                    line.push(board[i][j]);
             }
 
-            else if(direction % 2 == 0 && board[j][i] != 0)
+            deque<int> result;
+            while (!line.empty())
             {
-                line.push_back(board[j][i]);
+                int first = line.top(); line.pop();
+
+                if (!line.empty() && first == line.top())
+                {
+                    first += line.top(); line.pop();
+                }
+
+                max = (max < first) ? first : max;
+                sum += first;
+
+                result.push_front(first);
+            }
+            while (result.size() < n)
+            {
+                result.push_front(0);
             }
 
-        }        
-
-        while(!line.empty())
-        {
-            int top;
-            if(direction / 2 == 1)
+            for (int i = 0;i < n;++i)
             {
-                top = line.front();
-                line.pop_front();
-
-                
-                if(!line.empty() && top == line.front())
-                {
-                    newLine.push_back(top * 2);
-                    line.pop_front();
-                }
-                else
-                {
-                    newLine.push_back(top);
-                }
-            }
-            else
-            {
-                top = line.back();
-                line.pop_back();
-
-                
-                if(!line.empty() && top == line.back())
-                {
-                    newLine.push_front(top * 2);
-                    line.pop_back();
-                }
-                else
-                {
-                    newLine.push_front(top);
-                }
+                if (board[i][j] != result[i]) isEqual = false;
+                board[i][j] = result[i];
             }
         }
-
-        if(direction / 2 == 1)
+    }
+    else if (direction == 1)
+    {
+        for (int i = 0;i < n;++i)
         {
-            while(newLine.size() < n)
+            for (int j = 0;j < n;++j)
             {
-                newLine.push_back(0);
+                if (board[i][j] != 0)
+                    line.push(board[i][j]);
+            }
+
+            deque<int> result;
+            while (!line.empty())
+            {
+                int first = line.top(); line.pop();
+
+                if (!line.empty() && first == line.top())
+                {
+                    first += line.top(); line.pop();
+                }
+
+                max = (max < first) ? first : max;
+                sum += first;
+
+                result.push_front(first);
+            }
+            while (result.size() < n)
+            {
+                result.push_front(0);
+            }
+
+            for (int j = 0;j < n;++j)
+            {
+                if (board[i][j] != result[j]) isEqual = false;
+                board[i][j] = result[j];
             }
         }
-        
-        else
+    }
+    else if (direction == 2)
+    {
+        for (int j = 0;j < n;++j)
         {
-            while(newLine.size() < n) 
-            {                
-                newLine.push_front(0);
+            for (int i = n - 1;i >= 0;--i)
+            {
+                if (board[i][j] != 0)
+                    line.push(board[i][j]);
+            }
+
+            deque<int> result;
+            while (!line.empty())
+            {
+                int first = line.top(); line.pop();
+
+                if (!line.empty() && first == line.top())
+                {
+                    first += line.top(); line.pop();
+                }
+
+                max = (max < first) ? first : max;
+                sum += first;
+
+                result.push_back(first);
+            }
+            while (result.size() < n)
+            {
+                result.push_back(0);
+            }
+
+            for (int i = 0;i < n;++i)
+            {
+                if (board[i][j] != result[i]) isEqual = false;
+                board[i][j] = result[i];
             }
         }
-
-        int j = 0;
-        for(auto item : newLine)
+    }
+    else
+    {
+        for (int i = 0;i < n;++i)
         {
-            if(max < item) max = item;
+            for (int j = n - 1;j >= 0;--j)
+            {
+                if (board[i][j] != 0)
+                    line.push(board[i][j]);
+            }
 
-            if(direction % 2 == 1)
+            deque<int> result;
+            while (!line.empty())
             {
-                board[i][j] = item;
+                int first = line.top(); line.pop();
+
+                if (!line.empty() && first == line.top())
+                {
+                    first += line.top(); line.pop();
+                }
+
+                max = (max < first) ? first : max;
+                sum += first;
+
+                result.push_back(first);
             }
-            else
+            while (result.size() < n)
             {
-                board[j][i] = item;
+                result.push_back(0);
             }
-            ++j;
+
+            for (int j = 0;j < n;++j)
+            {
+                if (board[i][j] != result[j]) isEqual = false;
+                board[i][j] = result[j];
+            }
         }
     }
 
-    return max;
+    outputMax = max;
+    outputSum = sum;
+
+    return isEqual;
 }
 
-bool roll(vector<vector<int>> board)
-{
-    vector<vector<int>> newBoard(board);
-    bool isSame = true;
-    int n = board.size();
-
-    for(int i=0;i<4;++i)
-    {
-        fall(newBoard, i);
-    }
-
-    return isEqual(board, newBoard);
-}
-
-int biggest(vector<vector<int>> & board)
+int biggest(vector<vector<int>>& board)
 {
     int result = 0;
-    for(auto & line : board)
+    for (auto& line : board)
     {
-        for(auto & item : line)
+        for (auto& item : line)
         {
-            if(result < item) result = item;
+            if (result < item) result = item;
         }
     }
 
     return result;
 }
 
-int simulate(vector<vector<int>> & board, int searchDepth) {
-    if (searchDepth == 0 || roll(board)) 
+int sum(vector<vector<int>>& board)
+{
+    int result = 0;
+    for (auto& line : board)
     {
-        return biggest(board);
-    }
-    
-    int max = biggest(board);
-    for(int i=0;i<4;++i) {
-        vector<vector<int>> newBoard(board);
-        int localMax = fall(newBoard, i);
-        
-        if(localMax != -1) {
-            int result = simulate(newBoard, searchDepth-1);
-            if(max < result) max = result;
+        for (auto& item : line)
+        {
+            result += item;
         }
+    }
+
+    return result;
+}
+
+int simulate(vector<vector<int>>& board, int searchDepth, int max = 0) {
+    if (max == 0)
+    {
+        max = biggest(board);
+    }
+
+    if (searchDepth == 0)
+    {
+        return max;
+    }
+
+    vector<vector<int>> boardBackup(board);
+    for (int i = 0;i < 4;++i) {
+
+        int localMax = 0, localSum = 0;
+        bool isEqual = fall(board, i, localMax, localSum);
+
+        if (isEqual)
+            continue;
+
+        if (localSum < max * 2)
+            continue;
+
+        if (localMax != 0) {
+            int result = simulate(board, searchDepth - 1, localMax);
+            if (max < result) max = result;
+        }
+
+        board = boardBackup;
     }
     return max;
 }
@@ -190,14 +251,14 @@ int main()
     ios_base::sync_with_stdio(false);
     cin.tie(0);
     cout.tie(0);
-    
+
     int n;
     cin >> n;
     vector<vector<int>> board(n, vector<int>(n, 0));
 
-    for(int i=0;i<n;++i)
+    for (int i = 0;i < n;++i)
     {
-        for(int j=0;j<n;++j)
+        for (int j = 0;j < n;++j)
         {
             cin >> board[i][j];
         }

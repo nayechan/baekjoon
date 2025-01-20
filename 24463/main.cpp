@@ -9,96 +9,116 @@ int main()
     int n, m;
     cin >> n >> m;
 
-    vector<vector<bool>> data(n, vector<bool>(m, false));
-    vector<vector<bool>> result(data);
+    cin.tie(0);
+    cout.tie(0);
+    ios::sync_with_stdio(false);
 
-    vector<vector<pair<int,int>>> parent(n, vector<pair<int,int>>(m, {-1,-1}));
+    vector<vector<int>> data(n, vector<int>(m, 0));
+
+    vector<vector<pair<int, int>>> parent(n, vector<pair<int, int>>(m, { -1,-1 }));
 
     // to distinct unassigned position using {-1, -1}
-    pair<int,int> start = {-1, -1}, end = {-1, -1};
+    pair<int, int> start = { -1, -1 }, end = { -1, -1 };
 
-    for(int row=0;row<n;++row)
+    for (int row = 0; row < n; ++row)
     {
         string input;
         cin >> input;
 
         int column = 0;
-        for(char ch : input)
+        for (char ch : input)
         {
-            data[row][column] = (ch == '+');
+            data[row][column] = (ch == '+') ? 1 : 0;
 
-            if(row == 0 || row == n-1 || column == 0 || column == m-1)
+            if (row == 0 || row == n - 1 || column == 0 || column == m - 1)
             {
-                if(ch == '.')
+                if (ch == '.')
                 {
-                    if(start.first < 0)
-                        start = {row, column};
+                    if (start.first < 0)
+                        start = { row, column };
                     else
-                        end = {row, column};
+                        end = { row, column };
                 }
             }
             ++column;
         }
     }
 
-    queue<pair<int,int>> targetPostions;
-    const vector<pair<int,int>> delta = {{0,1},{0,-1},{1,0},{-1,0}};
+    queue<pair<int, int>> targetPositions;
+    const vector<pair<int, int>> delta = { {0,1},{0,-1},{1,0},{-1,0} };
 
-    targetPostions.push(start);
+    targetPositions.push(start);
+    parent[start.first][start.second] = start;
 
     bool found = false;
 
-    while(!targetPostions.empty() && !found)
+    while (!targetPositions.empty() && !found)
     {
-        int count = targetPostions.size();
+        int count = targetPositions.size();
 
-        for(int round = 1; round <= count; ++round)
+        for (int round = 1; round <= count; ++round)
         {
-            pair<int,int> element = targetPostions.back();
-            for(const pair<int,int> & d : delta)
+            pair<int, int> element = targetPositions.front();
+            for (const pair<int, int>& d : delta)
             {
-                pair<int,int> targetPos = {
-                    element.first + d.first, 
+                pair<int, int> targetPos = {
+                    element.first + d.first,
                     element.second + d.second
                 };
 
-                if(targetPos.first < 0 || targetPos.first >= n)
-                    continue;
-                
-                if(targetPos.second < 0 || targetPos.second >= m)
+                if (targetPos.first < 0 || targetPos.first >= n)
                     continue;
 
-                if(parent[targetPos.first][targetPos.second].first != -1)
+                if (targetPos.second < 0 || targetPos.second >= m)
                     continue;
 
-                targetPostions.push(targetPos);
-                parent[targetPos.first][targetPos.second] = {element.first, element.second};
+                if (data[targetPos.first][targetPos.second] != 0)
+                    continue;
 
-                if(targetPos == end)
+                targetPositions.push(targetPos);
+
+                data[targetPos.first][targetPos.second] = 2;
+                parent[targetPos.first][targetPos.second] = { element.first, element.second };
+
+                if (targetPos == end)
                 {
                     found = true;
                     break;
                 }
             }
 
-            if(found)
+            targetPositions.pop();
+
+            if (found)
             {
                 break;
-            }            
+            }
         }
     }
 
-    vector<pair<int,int>> path;
-    path.push_back(end);
+    pair<int, int> cursor = end;
+    data[end.first][end.second] = 3;
 
-    cout << end.first << ", " <<  end.second << endl;
-
-    while(path.back() != start)
+    while (cursor != start)
     {
-        cout << path.back().first << ", " <<  path.back().second << endl;
-        path.push_back(parent[end.first][end.second]);
+        cursor = parent[cursor.first][cursor.second];
+        data[cursor.first][cursor.second] = 3;
     }
-    
+
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = 0; j < m; ++j)
+        {
+            if (data[i][j] == 1)
+                cout << "+";
+            else if (data[i][j] == 3)
+                cout << ".";
+            else
+                cout << "@";
+        }
+        cout << endl;
+    }
+
 
     return 0;
 }
